@@ -1,11 +1,16 @@
 package com.example.quizgame.ui
 
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import com.example.quizgame.data.QuestionData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlin.random.Random
 
 class GameViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(GameUiState())
@@ -54,35 +59,49 @@ class GameViewModel : ViewModel() {
             "Lasagna"),
         )
 
-    private var currentQuestionIndex = 0
-    private var score = 0
-    private var isFinished = false
-    private var isCorrect = false
-
-    fun checkAnswer(correctAnswer: String) {
-        if (isFinished) {
-            if (correctAnswer == questions[currentQuestionIndex].correctAnswer) {
-                score++
-                isCorrect = true
-            } else {
-                isCorrect = false
+    fun checkAnswer(answer: String) {
+        var currentQuestionIndex = _uiState.value.currentQuestionIndex
+        if (answer == questions[currentQuestionIndex].correctAnswer) {
+            val score = _uiState.value.score + 1
+            _uiState.update { currentState ->
+                currentState.copy(score = score)
             }
         }
     }
 
+    fun countQuestion() {
+            _uiState.update { currentState ->
+                currentState.copy(currentQuestionCount = _uiState.value.currentQuestionCount + 1) }
+    }
+
     fun nextQuestion(): QuestionData? {
-        if (currentQuestionIndex < questions.size - 1) {
-            currentQuestionIndex++
+        var ansQuestionList =  _uiState.value.ansQuestionList
+        var currentQuestion = questions[_uiState.value.currentQuestionIndex]
+        if (ansQuestionList.size > 0) {
+            var currentQuestionIndex = ansQuestionList.randomOrNull()?:_uiState.value.currentQuestionIndex
+            currentQuestion = questions[currentQuestionIndex]
+            ansQuestionList.remove(currentQuestionIndex)
+            _uiState.update { currentState ->
+                currentState.copy(
+                    currentQuestionIndex = currentQuestionIndex,
+                    ansQuestionList = ansQuestionList,
+                ) }
         } else {
-            isFinished = true
+            _uiState.update { currentState ->
+                currentState.copy(
+                    isFinished = true,
+                ) }
         }
-        return questions[currentQuestionIndex]
+        return currentQuestion
     }
 
     fun resetGame() {
-        currentQuestionIndex = 0
-        score = 0
-        isFinished = false
+        _uiState.update { currentState ->
+            currentState.copy(
+                score = 0,
+                ansQuestionList = arrayListOf<Int>(0,1,2,3,4,5,6,7,8,9),
+                isFinished = false,
+                currentQuestionCount = 1,
+            ) }
     }
-
 }

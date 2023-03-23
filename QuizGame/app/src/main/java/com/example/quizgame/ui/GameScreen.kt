@@ -25,22 +25,21 @@ fun GameScreen(
 ) {
     val gameUiState by gameviewModel.uiState.collectAsState()
 
-    var currentQuestion by remember { mutableStateOf(gameviewModel.nextQuestion()) }
-    var choiceChecked by remember { mutableStateOf("") }
-
+//    var currentQuestion by remember { mutableStateOf(gameviewModel.nextQuestion()) }
+//    var choiceChecked by remember { mutableStateOf("") }
     Column(
         modifier = modifier
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        GameStatus()
-        GameLayout()
-        if (gameUiState.isFinished) {
+        if (!gameUiState.isFinished){
+            GameStatus()
+            GameLayout()
+        }
+        else {
             FinalScoreDialog(score = gameUiState.score,
                 onPlayAgain = {
                     gameviewModel.resetGame()
-                    currentQuestion = gameviewModel.nextQuestion()
-                    choiceChecked = ""
                 }
             )
         }
@@ -50,10 +49,9 @@ fun GameScreen(
 @Composable
 fun GameStatus(
     modifier: Modifier = Modifier,
-    gameviewModel: GameViewModel = viewModel()
+    gameviewModel: GameViewModel = viewModel(),
 ) {
     val gameUiState by gameviewModel.uiState.collectAsState()
-
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -93,12 +91,14 @@ fun GameLayout(
         )
     }
 
-    currentQuestion!!.choices.forEach { choice ->
+    currentQuestion!!.choices.shuffled().forEach { choice ->
         Row(
         ) {
             TextButton(onClick = {
+                gameviewModel.checkAnswer(choice)
                 currentQuestion = gameviewModel.nextQuestion()
                 choiceClicked = ""
+                gameviewModel.countQuestion()
             }
             ) {
                 Text(text = choice)
