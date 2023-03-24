@@ -25,8 +25,6 @@ fun GameScreen(
 ) {
     val gameUiState by gameviewModel.uiState.collectAsState()
 
-//    var currentQuestion by remember { mutableStateOf(gameviewModel.nextQuestion()) }
-//    var choiceChecked by remember { mutableStateOf("") }
     Column(
         modifier = modifier
             .padding(16.dp),
@@ -85,23 +83,31 @@ fun GameLayout(
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         Text(
-            text = currentQuestion!!.question,
-            fontSize = 45.sp,
-            modifier = modifier.align(Alignment.CenterHorizontally)
+            text = currentQuestion!!.questions,
+            fontSize = 40.sp,
+            modifier = modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(25.dp)
         )
     }
 
+    Spacer(modifier = Modifier.height(16.dp))
+
     currentQuestion!!.choices.shuffled().forEach { choice ->
-        Row(
-        ) {
-            TextButton(onClick = {
-                gameviewModel.checkAnswer(choice)
-                currentQuestion = gameviewModel.nextQuestion()
-                choiceClicked = ""
-                gameviewModel.countQuestion()
-            }
-            ) {
-                Text(text = choice)
+        Row(modifier = Modifier.fillMaxWidth().height(64.dp)) {
+            TextButton(
+                onClick = {
+                    gameviewModel.checkAnswer(choice)
+                    currentQuestion = gameviewModel.nextQuestion()
+                    choiceClicked = ""
+                    gameviewModel.countQuestion() },
+                modifier = modifier
+                    .fillMaxWidth()
+                ) {
+                Text(
+                    text = choice,
+                    fontSize = 20.sp,
+                )
             }
         }
     }
